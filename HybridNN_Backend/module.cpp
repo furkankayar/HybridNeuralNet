@@ -1,14 +1,19 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include "structures.cpp"
+#include <iostream>
+#include "DatasetInfo.h"
+
 
 namespace py = pybind11;
-using namespace structures;
+using namespace std;
 
 void initialization(py::array_t<float> item) {
     py::buffer_info info = item.request();
     DatasetInfo datasetInfo((float*)info.ptr, info.shape[1], info.shape[0]);
-    DecisionTree decisionTree(datasetInfo);
+
+    for (float token : datasetInfo.getTokens()) {
+        cout << token << "  " << endl;
+    }
 
 }
 

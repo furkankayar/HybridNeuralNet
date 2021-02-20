@@ -167,8 +167,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DatasetInfo.cpp" />
+    <ClCompile Include="Edge.cpp" />
     <ClCompile Include="module.cpp" />
-    <ClCompile Include="structures.cpp" />
+    <ClCompile Include="Node.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DatasetInfo.h" />
+    <ClInclude Include="Edge.h" />
+    <ClInclude Include="Node.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
