@@ -168,12 +168,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DatasetInfo.cpp" />
+    <ClCompile Include="DecisionTree.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="module.cpp" />
     <ClCompile Include="Node.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DatasetInfo.h" />
+    <ClInclude Include="DecisionTree.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Node.h" />
   </ItemGroup>

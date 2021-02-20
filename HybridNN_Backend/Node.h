@@ -16,7 +16,8 @@ private:
 	float threshold;
 public:
 	Node();
-	Node(float* data, int X, int Y, int selectiveFeatureOder, float threshold);
+	Node(DatasetInfo* dataset, int selectiveFeatureOrder);
+	Node(DatasetInfo* dataset, int selectiveFeatureOrder, float threshold);
 	list<Edge> getEdges();
 	DatasetInfo* getDataset();
 	int getSelectiveFeatureOrder();

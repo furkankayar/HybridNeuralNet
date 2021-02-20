@@ -5,38 +5,30 @@
 
 using namespace std;
 
-DatasetInfo::DatasetInfo(float* data, int columnSize, int rowSize) : 
-	data(data), 
-	columnSize(columnSize),
-	rowSize(rowSize){
+DatasetInfo::DatasetInfo(vector<vector <float>> data):
+	data(data){
 	this->initTokensAndEntropy();
 }
-DatasetInfo::DatasetInfo() : DatasetInfo(NULL, 0, 0) {}
+DatasetInfo::DatasetInfo() : DatasetInfo(vector<vector <float>>(0)) {}
 
-int DatasetInfo::getColumnSize() {
-	return this->columnSize;
-}
-int DatasetInfo::getRowSize() {
-	return this->rowSize;
-}
-float DatasetInfo::getItem(int posX, int posY) {
-	return this->data[posX * this->rowSize + posY];
+vector<vector <float>> DatasetInfo::getData() {
+	return this->data;
 }
 
 void DatasetInfo::initTokensAndEntropy() {
-	if (this->columnSize <= 0 || this->rowSize <= 0) {
+	if (this->data.size() <= 0 || this->data[0].size() <= 0) {
 		throw exception("Dataset is empty");
 	}
 	this->entropy = 0;
 	this->tokens = {};
 	map<float, int> frequencies;
-	int target_feature_index = this->getColumnSize() - 1;
-	for (size_t row = 0; row < this->getRowSize(); row++) {
-		frequencies[this->getItem(target_feature_index, row)]++;
+	int target_feature_index = this->data[0].size() - 1;
+	for (size_t row = 0; row < this->data.size(); row++) {
+		frequencies[this->data[row][target_feature_index]]++; 
 	}
 	map<float, int>::iterator it = frequencies.begin();
 	while (it != frequencies.end()) {
-		float p = (float)it->second / this->getRowSize();
+		float p = (float)it->second / this->data.size();
 		if (p > 0) {
 			this->entropy -= p * (log(p) / log(2));
 		}

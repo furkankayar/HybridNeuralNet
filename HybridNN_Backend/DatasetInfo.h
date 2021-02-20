@@ -2,22 +2,19 @@
 #ifndef DATASETINFO_H
 #define DATASETINFO_H
 #include <list>
+#include <vector>
 
 using namespace std;
 
 class DatasetInfo {
 private:
-	float* data;
+	vector<vector <float>> data;
 	float entropy;
 	list<float> tokens;
-	int columnSize;
-	int rowSize;
 public:
 	DatasetInfo();
-	DatasetInfo(float* data, int columnSize, int rowSize);
-	int getColumnSize();
-	int getRowSize();
-	float getItem(int posX, int posY);
+	DatasetInfo(vector<vector<float>> data);
+	vector<vector<float>> getData();
 	void initTokensAndEntropy();
 	list<float> getTokens();
 };

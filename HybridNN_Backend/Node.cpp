@@ -2,10 +2,12 @@
 #include "DatasetInfo.h"
 #include "Node.h"
 
-Node::Node() : Node(NULL, 0, 0, -1, -1) {}
+Node::Node() : Node(NULL, -1, -1) {}
 
-Node::Node(float* data, int X, int Y, int selectiveFeatureOrder, float threshold){
-	this->dataset = new DatasetInfo(data, X, Y);
+Node::Node(DatasetInfo* dataset, int selectiveFeatureOder) : Node(dataset, selectiveFeatureOder, -1){}
+
+Node::Node(DatasetInfo* dataset, int selectiveFeatureOrder, float threshold){
+	this->dataset = dataset;
 	this->selectiveFeatureOrder = selectiveFeatureOrder;
 	this->threshold = threshold;
 }
