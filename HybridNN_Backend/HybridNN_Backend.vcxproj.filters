@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="HybridNN_Backend.cpp">
+    <ClCompile Include="module.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31005.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "HybridNN", "HybridNN\HybridNN.pyproj", "{4979360F-FE1F-44E2-B728-3D7A2EB2B75D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HybridNN_Backend", "HybridNN_Backend\HybridNN_Backend.vcxproj", "{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HybridNN_Backend", "HybridNN_Backend\HybridNN_Backend.vcxproj", "{FCDDFD04-684A-409C-83B5-D1D69172E137}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,16 +23,16 @@ Global
 		{4979360F-FE1F-44E2-B728-3D7A2EB2B75D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4979360F-FE1F-44E2-B728-3D7A2EB2B75D}.Release|x64.ActiveCfg = Release|Any CPU
 		{4979360F-FE1F-44E2-B728-3D7A2EB2B75D}.Release|x86.ActiveCfg = Release|Any CPU
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Debug|x64.ActiveCfg = Debug|x64
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Debug|x64.Build.0 = Debug|x64
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Debug|x86.ActiveCfg = Debug|Win32
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Debug|x86.Build.0 = Debug|Win32
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Release|Any CPU.ActiveCfg = Release|Win32
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Release|x64.ActiveCfg = Release|x64
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Release|x64.Build.0 = Release|x64
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Release|x86.ActiveCfg = Release|Win32
-		{9F6F5B49-8724-4688-9D6A-43C24FD36FD0}.Release|x86.Build.0 = Release|Win32
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Debug|x64.ActiveCfg = Debug|x64
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Debug|x64.Build.0 = Debug|x64
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Debug|x86.ActiveCfg = Debug|Win32
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Debug|x86.Build.0 = Debug|Win32
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Release|Any CPU.ActiveCfg = Release|Win32
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Release|x64.ActiveCfg = Release|x64
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Release|x64.Build.0 = Release|x64
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Release|x86.ActiveCfg = Release|Win32
+		{FCDDFD04-684A-409C-83B5-D1D69172E137}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
