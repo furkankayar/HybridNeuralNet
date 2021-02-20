@@ -2,6 +2,7 @@
 #include <list> 
 #include <map>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -42,6 +43,30 @@ void DatasetInfo::initTokensAndEntropy() {
 	}
 	cout << endl;
 }
+
 list<float> DatasetInfo::getTokens() {
 	return this->tokens;
 }
+
+float DatasetInfo::getEntropy() {
+	return this->entropy;
+}
+
+void DatasetInfo::print() {
+	cout << "Dataset: " << endl;
+	for (unsigned int i = 0; i < this->data.size(); i++) {
+		cout << i << " - ";
+		for (unsigned int j = 0; j < this->data[0].size(); j++) {
+			cout << this->data[i][j] << " ";
+		}
+		cout << endl;
+	}
+}
+
+void DatasetInfo::sort(int featureOrder) {
+	std::sort(this->data.begin(), this->data.end(),
+		[&](const vector<float>& a, const vector<float>& b) {
+			return a[featureOrder] < b[featureOrder];
+		});
+}
+

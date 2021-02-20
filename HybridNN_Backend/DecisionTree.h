@@ -14,6 +14,7 @@ public:
 	Node* getRoot();
 	void setRoot(Node* root);
 	void splitNode();
+	float calculateBestInformationGainContinousFeature(list<float> thresholds, int featureOrder);
 };
 
 #endif

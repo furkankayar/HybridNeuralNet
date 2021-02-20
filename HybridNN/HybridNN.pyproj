@@ -29,6 +29,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="iris.csv" />
+    <Content Include="test.csv">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HybridNN_Backend\HybridNN_Backend.vcxproj">

@@ -31,6 +31,7 @@ void initialization(py::array_t<float> item) {
         Node* root = new Node(&datasetInfo, i);
         DecisionTree* dtree = new DecisionTree(root);
         dtree->splitNode();
+        break;
     }
     
 }

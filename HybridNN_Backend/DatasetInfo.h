@@ -17,6 +17,9 @@ public:
 	vector<vector<float>> getData();
 	void initTokensAndEntropy();
 	list<float> getTokens();
+	float getEntropy();
+	void sort(static int featureOrder);
+	void print();
 };
 
 #endif 
