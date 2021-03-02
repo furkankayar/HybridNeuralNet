@@ -6,14 +6,19 @@
 
 using namespace std;
 
-DatasetInfo::DatasetInfo(vector<vector <float>> data):
-	data(data){
+DatasetInfo::DatasetInfo(vector<vector <float>> data, vector<Type> types):
+	data(data),
+	types(types){
 	this->initTokensAndEntropy();
 }
-DatasetInfo::DatasetInfo() : DatasetInfo(vector<vector <float>>(0)) {}
+DatasetInfo::DatasetInfo() : DatasetInfo(vector<vector <float>>(0), vector<Type>(0)) {}
 
 vector<vector <float>> DatasetInfo::getData() {
 	return this->data;
+}
+
+vector<Type> DatasetInfo::getTypes() {
+	return this->types;
 }
 
 void DatasetInfo::initTokensAndEntropy() {

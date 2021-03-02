@@ -10,6 +10,7 @@ private:
 	float infoGain;
 public:
 	Edge();
+	Edge(Node* target);
 	Edge(Node* target, float infoGain);
 	Node* getTarget();
 	void setTarget(Node* target);

@@ -3,6 +3,8 @@
 
 Edge::Edge() : Edge(NULL, 0.0) {}
 
+Edge::Edge(Node* target) : Edge(target, 0.0) {}
+
 Edge::Edge(Node* target, float infoGain):
 	target(target),
 	infoGain(infoGain){}

@@ -5,35 +5,44 @@
 #include "DecisionTree.h"
 #include "Node.h"
 
-
 namespace py = pybind11;
 using namespace std;
 
-void initialization(py::array_t<float> item) {
-    py::buffer_info info = item.request();
-
-    float* vals = (float*)info.ptr;
-
-    unsigned int Y = info.shape[0];
-    unsigned int X = info.shape[1];
+void initialization(py::array_t<float> dataset, py::array_t<float> types) {
+    py::buffer_info datasetBufferInfo = dataset.request();
+    py::buffer_info typesBufferInfo = types.request();
     
-    vector<vector <float>> vect_arr(Y, vector<float>(X));
+    /* Read dataset */
+    float* datasetPtr = (float*)datasetBufferInfo.ptr;
 
-    for (unsigned int i = 0; i < Y; i++) {
-        for (unsigned int j = 0; j < X; j++) {
-            vect_arr[i][j] = vals[j * Y + i ];
+    unsigned int datasetY = datasetBufferInfo.shape[0];
+    unsigned int datasetX = datasetBufferInfo.shape[1];
+    
+    vector<vector <float>> vect_arr(datasetY, vector<float>(datasetX));
+
+    for (unsigned int i = 0; i < datasetY; i++) {
+        for (unsigned int j = 0; j < datasetX; j++) {
+            vect_arr[i][j] = datasetPtr[j * datasetY + i ];
         }
     }
 
-    DatasetInfo datasetInfo(vect_arr);
+    /* Read types of descriptive features */
+    float* typesPtr = (float*)typesBufferInfo.ptr;
+    unsigned int typesY = typesBufferInfo.shape[0];
+    vector<Type> typesVect(typesY);
 
-    for (size_t i = 0; i < datasetInfo.getData()[0].size(); i++) {
-        Node* root = new Node(&datasetInfo, i);
+    for (unsigned int i = 0; i < typesY; i++) {
+        typesVect[i] = (typesPtr[i] == 0.0 ? CATEGORICAL : CONTINUOUS);
+    }
+
+    DatasetInfo* datasetInfo = new DatasetInfo(vect_arr, typesVect);
+
+    for (size_t i = 0; i < datasetInfo->getData()[0].size(); i++) {
+        Node* root = new Node(datasetInfo, i);
         DecisionTree* dtree = new DecisionTree(root);
-        dtree->splitNode();
+        dtree->splitRootNode();
         break;
     }
-    
 }
 
 

@@ -13,8 +13,11 @@ public:
 	DecisionTree(Node* root);
 	Node* getRoot();
 	void setRoot(Node* root);
-	void splitNode();
-	float calculateBestInformationGainContinousFeature(list<float> thresholds, int featureOrder);
+	void splitRootNode();
+	float calculateBestInformationGainContinuousFeature(Node* node, int featureOrder);
+	float calculateBestInformationGainCategoricalFeature(Node* node, int featureOrder);
+	void splitContinuous(Node* node, int featureOrder);
+	list<float> calculateThresholds(Node* node, int featureOrder);
 };
 
 #endif

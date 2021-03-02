@@ -1,8 +1,8 @@
-elevation,vegetation
-300,riparian
-1200,chapparal
-1500,riparian
-3000,chapparal
-3900,chapparal
-4450,conifer
-5000,conifer
+stream,elevation,vegetation
+false,300,riparian
+true,1200,chapparal
+true,1500,riparian
+false,3000,chapparal
+false,3900,chapparal
+true,4450,conifer
+true,5000,conifer
