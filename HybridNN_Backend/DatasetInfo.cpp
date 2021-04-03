@@ -75,3 +75,7 @@ void DatasetInfo::sort(int featureOrder) {
 		});
 }
 
+void DatasetInfo::setDatasetType(int featureOrder, Type type) {
+	this->types[featureOrder] = type;
+}
+

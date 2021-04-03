@@ -6,7 +6,7 @@
 
 using namespace std;
 
-enum Type {CONTINUOUS=1, CATEGORICAL=0};
+enum Type {CONTINUOUS=1, CATEGORICAL=0, NOT_AVAILABLE=-1};
 
 class DatasetInfo {
 private:
@@ -24,6 +24,7 @@ public:
 	float getEntropy();
 	void sort(static int featureOrder);
 	void print();
+	void setDatasetType(int featureOrder, Type type);
 };
 
 #endif 

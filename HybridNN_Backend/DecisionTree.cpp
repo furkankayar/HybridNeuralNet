@@ -28,21 +28,96 @@ void DecisionTree::setRoot(Node* root) {
 void DecisionTree::splitRootNode() {
 	int featureOrder = this->root->getSelectiveFeatureOrder();
 	vector<Type> types = this->root->getDataset()->getTypes();
-
+	
 	if (types[featureOrder] == CATEGORICAL) {
+		this->root->getDataset()->setDatasetType(featureOrder, NOT_AVAILABLE);
 		cout << this->calculateBestInformationGainCategoricalFeature(this->root, featureOrder) << endl;
 	}
 	else if (types[featureOrder] == CONTINUOUS) {
+		this->root->getDataset()->setDatasetType(featureOrder, NOT_AVAILABLE);
 		this->calculateBestInformationGainContinuousFeature(this->root, featureOrder);
 		this->splitContinuous(this->root, featureOrder);
-
-		
-		//this->root->getDataset()->print();
-		cout << this->root->getEdges().size() << endl;
+		/*
 		for (Edge* edge : this->root->getEdges()) {
-			edge->getTarget()->getDataset()->print();
+			cout << calculateBestFeatureOrder(edge->getTarget()) << endl;			
+		}
+		*/
+	}
+
+}
+
+void DecisionTree::printTree(Node* node) {
+	if (node->getEdges().size() == 0) {
+		node->getDataset()->print();
+		return;
+	}
+	
+	for (Edge* edge : node->getEdges()) {
+		printTree(edge->getTarget());
+	}
+}
+
+void DecisionTree::buildTree(Node* node) {
+
+	if (isAllSameClass(node)) {
+		return;
+	}
+	
+	vector<Type> types = node->getDataset()->getTypes();
+	int bestFeatureOrder = calculateBestFeatureOrder(node); 
+	if (types[bestFeatureOrder] == CATEGORICAL){
+		node->getDataset()->setDatasetType(bestFeatureOrder, NOT_AVAILABLE);
+	}
+	else if (types[bestFeatureOrder] == CONTINUOUS) {
+		node->getDataset()->setDatasetType(bestFeatureOrder, NOT_AVAILABLE);
+		splitContinuous(node, bestFeatureOrder);
+	}
+
+	for (Edge* edge : node->getEdges()) {
+		buildTree(edge->getTarget());
+	}
+}
+
+bool DecisionTree::isAllSameClass(Node* node) {
+	vector<vector<float>> dataset = node->getDataset()->getData();
+	int target = dataset[0].size() - 1;
+	float firstClass = dataset[0][target];
+	for (long i = 1; i < dataset.size(); i++) {
+		if (firstClass != dataset[i][target]) {
+			return false;
 		}
 	}
+	return true;
+}
+
+int DecisionTree::calculateBestFeatureOrder(Node* node) {
+	vector<vector <float>> data = node->getDataset()->getData();
+	vector<Type> types = node->getDataset()->getTypes();
+	float bestInfoGain = 0.0f;
+	int bestOrder = -1;
+	for (size_t i = 0; i < types.size() - 1; i++) {
+		if (types[i] == NOT_AVAILABLE) {
+			continue;
+		} 
+		else if (types[i] == CONTINUOUS) {
+			float infoGain = calculateBestInformationGainContinuousFeature(node, i);
+			if (infoGain >= bestInfoGain) {
+				bestInfoGain = infoGain;
+				bestOrder = i;
+			}
+		}
+		else if (types[i] == CATEGORICAL) {
+			float infoGain = calculateBestInformationGainCategoricalFeature(node, i);
+			if (infoGain >= bestInfoGain) {
+				bestInfoGain = infoGain;
+				bestOrder = i;
+			}
+		}
+	}
+	if (types[bestOrder] == CONTINUOUS) { //TODO burayý düzenleyebilirsin. bu fonksiyon node'un içerisindeki LT GTE gibi deðerleri atadýðý için yukarýda en iyisini bulurken bu deðerler en son order için hesaplanmýþ halde kalýyor. bu yüzden burada tekrardan best order için yeniden hesaplanýp atanmasý gerekiyor.
+		calculateBestInformationGainContinuousFeature(node, bestOrder);
+	}
+	return bestOrder;
 }
 
 void DecisionTree::splitContinuous(Node* node, int featureOrder) {
@@ -53,6 +128,7 @@ void DecisionTree::splitContinuous(Node* node, int featureOrder) {
 	vector<vector <float>> dataGTE(node->getNumberOfGTE(), vector<float>(data[0].size()));
 	unsigned long pointerLT = 0;
 	unsigned long pointerGTE = 0;
+
 	for (unsigned long i = 0; i < data.size(); i++) {
 		if (data[i][featureOrder] < threshold) {
 			dataLT[pointerLT++] = data[i];
@@ -61,6 +137,7 @@ void DecisionTree::splitContinuous(Node* node, int featureOrder) {
 			dataGTE[pointerGTE++] = data[i];
 		}
 	}
+
 	Node* nodeLT = new Node(new DatasetInfo(dataLT, node->getDataset()->getTypes()));
 	Node* nodeGTE = new Node(new DatasetInfo(dataGTE, node->getDataset()->getTypes()));
 	node->addEdge(new Edge(nodeLT));
@@ -104,7 +181,7 @@ float DecisionTree::calculateBestInformationGainContinuousFeature(Node* node, in
 			partitionEntropyGTE -= (float)itGTE->second / totalInstanceGTE * (log((float)itGTE->second / totalInstanceGTE) / log(2));
 			itGTE++;
 		}
-		float informationGain = this->root->getDataset()->getEntropy() - (((float)totalInstanceLT / totalInstanceCount * partitionEntropyLT) + ((float)totalInstanceGTE / totalInstanceCount * partitionEntropyGTE));
+		float informationGain = node->getDataset()->getEntropy() - (((float)totalInstanceLT / totalInstanceCount * partitionEntropyLT) + ((float)totalInstanceGTE / totalInstanceCount * partitionEntropyGTE));
 		if (informationGain > bestInformationGain) {
 			bestInformationGain = informationGain;
 			bestThreshold = threshold;
@@ -112,6 +189,7 @@ float DecisionTree::calculateBestInformationGainContinuousFeature(Node* node, in
 			bestTotalInstanceGTE = totalInstanceGTE;
 		}
 	}
+
 	node->setThreshold(bestThreshold);
 	node->setNumberOfGTE(bestTotalInstanceGTE);
 	node->setNumberOfLT(bestTotalInstanceLT);

@@ -4,6 +4,7 @@
 #include "DatasetInfo.h"
 #include "DecisionTree.h"
 #include "Node.h"
+#include "Edge.h"
 
 namespace py = pybind11;
 using namespace std;
@@ -32,17 +33,25 @@ void initialization(py::array_t<float> dataset, py::array_t<float> types) {
     vector<Type> typesVect(typesY);
 
     for (unsigned int i = 0; i < typesY; i++) {
-        typesVect[i] = (typesPtr[i] == 0.0 ? CATEGORICAL : CONTINUOUS);
+        typesVect[i] = (typesPtr[i] == 0.0 ? Type::CATEGORICAL : Type::CONTINUOUS);
     }
 
-    DatasetInfo* datasetInfo = new DatasetInfo(vect_arr, typesVect);
-
-    for (size_t i = 0; i < datasetInfo->getData()[0].size(); i++) {
+   
+    for (size_t i = 0; i < typesVect.size() - 1; i++) {
+        DatasetInfo* datasetInfo = new DatasetInfo(vect_arr, typesVect);
         Node* root = new Node(datasetInfo, i);
         DecisionTree* dtree = new DecisionTree(root);
         dtree->splitRootNode();
-        break;
+        for (Edge* edge : dtree->getRoot()->getEdges()) {
+            dtree->buildTree(edge->getTarget());
+        }
+        //dtree->printTree(dtree->getRoot());
+        cout << "=====================" << endl;
+        //break;
     }
+
+
+    cout << "Successful finish" << endl;
 }
 
 
