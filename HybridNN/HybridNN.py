@@ -9,7 +9,7 @@ def prepare_dataset(df, target=None):
     types = []
    
     for i, col in zip(df.dtypes, df):
-        if i == 'object' or type == 'bool':
+        if i == 'object' or i == 'bool':
             df[col] = df[col].astype('category').cat.codes
             types.append(TYPE_CATEGORICAL)
         else:
@@ -19,7 +19,8 @@ def prepare_dataset(df, target=None):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('iris.csv', delimiter=',')
-    df, types = prepare_dataset(df, target='Species')
+    df = pd.read_csv('test2.csv', delimiter=',')
+    df, types = prepare_dataset(df, target='appealing')
     arr = df.to_numpy()
+    print(types)
     initialization(arr, types)

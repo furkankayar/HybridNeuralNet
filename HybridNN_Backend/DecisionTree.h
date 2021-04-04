@@ -17,9 +17,10 @@ public:
 	float calculateBestInformationGainContinuousFeature(Node* node, int featureOrder);
 	float calculateBestInformationGainCategoricalFeature(Node* node, int featureOrder);
 	void splitContinuous(Node* node, int featureOrder);
+	void splitCategorical(Node* node, int featureOrder);
 	int calculateBestFeatureOrder(Node* node);
 	list<float> calculateThresholds(Node* node, int featureOrder);
-	void buildTree(Node* node);
+	void buildTree(Node* node, int depth);
 	bool isAllSameClass(Node* node);
 	void printTree(Node* node);
 };

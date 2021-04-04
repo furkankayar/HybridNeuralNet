@@ -28,6 +28,7 @@
     <InterpreterReference Include="CondaEnv|CondaEnv|venv" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="heart.csv" />
     <Content Include="iris.csv" />
     <Content Include="test.csv">
       <SubType>Code</SubType>

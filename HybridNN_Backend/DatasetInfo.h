@@ -22,7 +22,6 @@ public:
 	void initTokensAndEntropy();
 	list<float> getTokens();
 	float getEntropy();
-	void sort(static int featureOrder);
 	void print();
 	void setDatasetType(int featureOrder, Type type);
 };

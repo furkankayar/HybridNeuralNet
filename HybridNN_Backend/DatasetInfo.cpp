@@ -24,6 +24,9 @@ vector<Type> DatasetInfo::getTypes() {
 void DatasetInfo::initTokensAndEntropy() {
 	if (this->data.size() <= 0 || this->data[0].size() <= 0) {
 		throw exception("Dataset is empty");
+		this->entropy = 0;
+		this->tokens = {};
+		return;
 	}
 	this->entropy = 0;
 	this->tokens = {};
@@ -41,12 +44,12 @@ void DatasetInfo::initTokensAndEntropy() {
 		this->tokens.push_back(it->first);
 		it++;
 	}
-	cout << "entropy: " << this->entropy << endl;
+	/*cout << "entropy: " << this->entropy << endl;
 	cout << "tokens: ";
 	for (float token : tokens) {
 		cout << token << " ";
 	}
-	cout << endl;
+	cout << endl;*/
 }
 
 list<float> DatasetInfo::getTokens() {
@@ -68,12 +71,6 @@ void DatasetInfo::print() {
 	}
 }
 
-void DatasetInfo::sort(int featureOrder) {
-	std::sort(this->data.begin(), this->data.end(),
-		[&](const vector<float>& a, const vector<float>& b) {
-			return a[featureOrder] < b[featureOrder];
-		});
-}
 
 void DatasetInfo::setDatasetType(int featureOrder, Type type) {
 	this->types[featureOrder] = type;

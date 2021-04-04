@@ -36,18 +36,18 @@ void initialization(py::array_t<float> dataset, py::array_t<float> types) {
         typesVect[i] = (typesPtr[i] == 0.0 ? Type::CATEGORICAL : Type::CONTINUOUS);
     }
 
-   
+
     for (size_t i = 0; i < typesVect.size() - 1; i++) {
         DatasetInfo* datasetInfo = new DatasetInfo(vect_arr, typesVect);
         Node* root = new Node(datasetInfo, i);
         DecisionTree* dtree = new DecisionTree(root);
         dtree->splitRootNode();
+   
         for (Edge* edge : dtree->getRoot()->getEdges()) {
-            dtree->buildTree(edge->getTarget());
+            dtree->buildTree(edge->getTarget(), 0);
         }
-        //dtree->printTree(dtree->getRoot());
+        dtree->printTree(dtree->getRoot());
         cout << "=====================" << endl;
-        //break;
     }
 
 

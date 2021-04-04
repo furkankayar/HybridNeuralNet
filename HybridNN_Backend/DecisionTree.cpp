@@ -31,50 +31,55 @@ void DecisionTree::splitRootNode() {
 	
 	if (types[featureOrder] == CATEGORICAL) {
 		this->root->getDataset()->setDatasetType(featureOrder, NOT_AVAILABLE);
-		cout << this->calculateBestInformationGainCategoricalFeature(this->root, featureOrder) << endl;
+		this->splitCategorical(this->root, featureOrder);
 	}
 	else if (types[featureOrder] == CONTINUOUS) {
-		this->root->getDataset()->setDatasetType(featureOrder, NOT_AVAILABLE);
+		//this->root->getDataset()->setDatasetType(featureOrder, NOT_AVAILABLE);
 		this->calculateBestInformationGainContinuousFeature(this->root, featureOrder);
 		this->splitContinuous(this->root, featureOrder);
-		/*
-		for (Edge* edge : this->root->getEdges()) {
-			cout << calculateBestFeatureOrder(edge->getTarget()) << endl;			
-		}
-		*/
 	}
 
 }
 
 void DecisionTree::printTree(Node* node) {
 	if (node->getEdges().size() == 0) {
+		cout << "LEAF" << endl;
+		cout << "FEATURE " << node->getSelectiveFeatureOrder() << endl;
+		cout << "THRESHOLD " << node->getThreshold() << endl;
 		node->getDataset()->print();
 		return;
 	}
 	
+	cout << "INTERNAL" << endl;
+	cout << "FEATURE " << node->getSelectiveFeatureOrder() << endl;
+	cout << "THRESHOLD " << node->getThreshold() << endl;
+	node->getDataset()->print();
 	for (Edge* edge : node->getEdges()) {
 		printTree(edge->getTarget());
 	}
 }
 
-void DecisionTree::buildTree(Node* node) {
+void DecisionTree::buildTree(Node* node, int depth) {
 
 	if (isAllSameClass(node)) {
 		return;
 	}
-	
 	vector<Type> types = node->getDataset()->getTypes();
 	int bestFeatureOrder = calculateBestFeatureOrder(node); 
+	node->setSelectiveFeatureOrder(bestFeatureOrder);
+
 	if (types[bestFeatureOrder] == CATEGORICAL){
 		node->getDataset()->setDatasetType(bestFeatureOrder, NOT_AVAILABLE);
+		splitCategorical(node, bestFeatureOrder);
 	}
 	else if (types[bestFeatureOrder] == CONTINUOUS) {
-		node->getDataset()->setDatasetType(bestFeatureOrder, NOT_AVAILABLE);
+		//node->getDataset()->setDatasetType(bestFeatureOrder, NOT_AVAILABLE);
 		splitContinuous(node, bestFeatureOrder);
 	}
+	cout << "RUN " << depth <<  endl;
 
 	for (Edge* edge : node->getEdges()) {
-		buildTree(edge->getTarget());
+		buildTree(edge->getTarget(), depth + 1);
 	}
 }
 
@@ -93,8 +98,9 @@ bool DecisionTree::isAllSameClass(Node* node) {
 int DecisionTree::calculateBestFeatureOrder(Node* node) {
 	vector<vector <float>> data = node->getDataset()->getData();
 	vector<Type> types = node->getDataset()->getTypes();
-	float bestInfoGain = 0.0f;
+	float bestInfoGain = -1.0f;
 	int bestOrder = -1;
+
 	for (size_t i = 0; i < types.size() - 1; i++) {
 		if (types[i] == NOT_AVAILABLE) {
 			continue;
@@ -114,8 +120,10 @@ int DecisionTree::calculateBestFeatureOrder(Node* node) {
 			}
 		}
 	}
+	
 	if (types[bestOrder] == CONTINUOUS) { //TODO burayý düzenleyebilirsin. bu fonksiyon node'un içerisindeki LT GTE gibi deðerleri atadýðý için yukarýda en iyisini bulurken bu deðerler en son order için hesaplanmýþ halde kalýyor. bu yüzden burada tekrardan best order için yeniden hesaplanýp atanmasý gerekiyor.
 		calculateBestInformationGainContinuousFeature(node, bestOrder);
+
 	}
 	return bestOrder;
 }
@@ -137,6 +145,7 @@ void DecisionTree::splitContinuous(Node* node, int featureOrder) {
 			dataGTE[pointerGTE++] = data[i];
 		}
 	}
+	
 
 	Node* nodeLT = new Node(new DatasetInfo(dataLT, node->getDataset()->getTypes()));
 	Node* nodeGTE = new Node(new DatasetInfo(dataGTE, node->getDataset()->getTypes()));
@@ -144,15 +153,32 @@ void DecisionTree::splitContinuous(Node* node, int featureOrder) {
 	node->addEdge(new Edge(nodeGTE));
 }
 
+void DecisionTree::splitCategorical(Node* node, int featureOrder) {
+	vector<vector <float>> data = node->getDataset()->getData();
+
+	list<float> usedTokens;
+	for (unsigned long i = 0; i < data.size(); i++) {
+		if (find(usedTokens.begin(), usedTokens.end(), data[i][featureOrder]) == usedTokens.end()) {
+			float item = data[i][featureOrder];
+			vector<vector <float>> sub_data;
+			copy_if(data.begin(), data.end(), back_inserter(sub_data), [featureOrder, item](vector<float> i) {return i[featureOrder] == item; });
+			usedTokens.push_back(item);
+			Node* newNode = new Node(new DatasetInfo(sub_data, node->getDataset()->getTypes()));
+			node->addEdge(new Edge(newNode));
+		}
+	}
+
+}
+
 float DecisionTree::calculateBestInformationGainContinuousFeature(Node* node, int featureOrder) {
 	vector<vector <float>> data = node->getDataset()->getData();
 	list<float> thresholds = calculateThresholds(node, featureOrder);
 	unsigned long totalInstanceCount = data.size();
 	int targetFeature = data[0].size() - 1;
-	float bestInformationGain = 0.0f;
-	float bestThreshold = 0.0f;
-	int bestTotalInstanceLT = 0;
-	int bestTotalInstanceGTE = 0;
+	float bestInformationGain = -1.0f;
+	float bestThreshold = -1.0f;
+	int bestTotalInstanceLT = -1;
+	int bestTotalInstanceGTE = -1;
 	for (float threshold : thresholds) {
 		int totalInstanceLT = 0;
 		int totalInstanceGTE = 0;
@@ -181,8 +207,9 @@ float DecisionTree::calculateBestInformationGainContinuousFeature(Node* node, in
 			partitionEntropyGTE -= (float)itGTE->second / totalInstanceGTE * (log((float)itGTE->second / totalInstanceGTE) / log(2));
 			itGTE++;
 		}
+
 		float informationGain = node->getDataset()->getEntropy() - (((float)totalInstanceLT / totalInstanceCount * partitionEntropyLT) + ((float)totalInstanceGTE / totalInstanceCount * partitionEntropyGTE));
-		if (informationGain > bestInformationGain) {
+		if (informationGain >= bestInformationGain) {
 			bestInformationGain = informationGain;
 			bestThreshold = threshold;
 			bestTotalInstanceLT = totalInstanceLT;
@@ -197,9 +224,12 @@ float DecisionTree::calculateBestInformationGainContinuousFeature(Node* node, in
 }
 
 list<float> DecisionTree::calculateThresholds(Node* node, int featureOrder) {
-	node->getDataset()->sort(featureOrder);
 
 	vector<vector <float>> data = node->getDataset()->getData();
+	std::sort(data.begin(), data.end(),
+		[&](const vector<float>& a, const vector<float>& b) {
+			return a[featureOrder] < b[featureOrder];
+		});
 
 	unsigned long Y = node->getDataset()->getData().size();
 	unsigned short X = node->getDataset()->getData()[0].size();
