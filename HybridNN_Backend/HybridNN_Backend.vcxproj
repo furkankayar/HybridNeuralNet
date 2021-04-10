@@ -174,13 +174,19 @@
     <ClCompile Include="DatasetInfo.cpp" />
     <ClCompile Include="DecisionTree.cpp" />
     <ClCompile Include="Edge.cpp" />
+    <ClCompile Include="Layer.cpp" />
     <ClCompile Include="module.cpp" />
+    <ClCompile Include="Neuron.cpp" />
+    <ClCompile Include="NNet.cpp" />
     <ClCompile Include="Node.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DatasetInfo.h" />
     <ClInclude Include="DecisionTree.h" />
     <ClInclude Include="Edge.h" />
+    <ClInclude Include="NNet.h" />
+    <ClInclude Include="Layer.h" />
+    <ClInclude Include="Neuron.h" />
     <ClInclude Include="Node.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -15,6 +15,7 @@ DecisionTree::DecisionTree() : DecisionTree(NULL){}
 
 DecisionTree::DecisionTree(Node* root) {
 	this->root = root;
+	this->maxTreeDepth = 1;
 }
 
 Node* DecisionTree::getRoot() {
@@ -28,7 +29,7 @@ void DecisionTree::setRoot(Node* root) {
 void DecisionTree::splitRootNode() {
 	int featureOrder = this->root->getSelectiveFeatureOrder();
 	vector<Type> types = this->root->getDataset()->getTypes();
-	
+	this->root->setName("R");
 	if (types[featureOrder] == CATEGORICAL) {
 		this->root->getDataset()->setDatasetType(featureOrder, NOT_AVAILABLE);
 		this->splitCategorical(this->root, featureOrder);
@@ -44,22 +45,54 @@ void DecisionTree::splitRootNode() {
 void DecisionTree::printTree(Node* node) {
 	if (node->getEdges().size() == 0) {
 		cout << "LEAF" << endl;
+		cout << "NAME " << node->getName() << endl;
 		cout << "FEATURE " << node->getSelectiveFeatureOrder() << endl;
 		cout << "THRESHOLD " << node->getThreshold() << endl;
+		cout << "LEVEL " << node->getLevel() << endl;
+		cout << "CLASS " << node->getClass() << endl;
 		node->getDataset()->print();
 		return;
 	}
 	
 	cout << "INTERNAL" << endl;
+	cout << "NAME " << node->getName() << endl;
 	cout << "FEATURE " << node->getSelectiveFeatureOrder() << endl;
 	cout << "THRESHOLD " << node->getThreshold() << endl;
+	cout << "LEVEL " << node->getLevel() << endl;
 	node->getDataset()->print();
 	for (Edge* edge : node->getEdges()) {
 		printTree(edge->getTarget());
 	}
 }
 
+void DecisionTree::getNodesWithLevel(Node* node, int level, list<Node*>& nodes) {
+	if (node->getLevel() == level) {
+		nodes.push_back(node);
+		return;
+	}
+
+	for (Edge* edge : node->getEdges()) {
+		getNodesWithLevel(edge->getTarget(), level, nodes);
+	}
+}
+
+void DecisionTree::moveLeafNodes(Node* node, int newLevel) {
+	if (node->getEdges().size() == 0) {
+		node->setLevel(newLevel);
+	}
+
+	for (Edge* edge : node->getEdges()) {
+		moveLeafNodes(edge->getTarget(), newLevel);
+	}
+}
+
 void DecisionTree::buildTree(Node* node, int depth) {
+
+	node->setLevel(depth);
+
+	if (depth > this->maxTreeDepth) {
+		this->maxTreeDepth = depth;
+	}
 
 	if (isAllSameClass(node)) {
 		return;
@@ -76,10 +109,13 @@ void DecisionTree::buildTree(Node* node, int depth) {
 		//node->getDataset()->setDatasetType(bestFeatureOrder, NOT_AVAILABLE);
 		splitContinuous(node, bestFeatureOrder);
 	}
-	cout << "RUN " << depth <<  endl;
 
+	int count = 0;
 	for (Edge* edge : node->getEdges()) {
-		buildTree(edge->getTarget(), depth + 1);
+		Node* child = edge->getTarget();
+		child->setName(node->getName() + "-" + to_string(count));
+		buildTree(child, depth + 1);
+		count++;
 	}
 }
 
@@ -275,4 +311,12 @@ float DecisionTree::calculateBestInformationGainCategoricalFeature(Node* node, i
 	}
 	
 	return node->getDataset()->getEntropy() - remainder;
+}
+
+void DecisionTree::setMaxTreeDepth(int maxTreeDepth) {
+	this->maxTreeDepth = maxTreeDepth;
+}
+
+int DecisionTree::getMaxTreeDepth() {
+	return this->maxTreeDepth;
 }

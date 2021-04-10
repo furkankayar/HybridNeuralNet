@@ -2,6 +2,7 @@
 #ifndef NODE_H
 #define NODE_H
 #include <list>
+#include <string>
 
 using namespace std;
 
@@ -11,11 +12,14 @@ class Edge;
 class Node {
 private:
 	list<Edge*> edges;
-	DatasetInfo* dataset; 
+	DatasetInfo* dataset;
+	string name; 
+	int level;
 	int selectiveFeatureOrder;
 	float threshold;
 	int numberOfLT;
 	int numberOfGTE;
+
 public:
 	Node();
 	Node(DatasetInfo* dataset);
@@ -30,8 +34,15 @@ public:
 	void setThreshold(float threshold);
 	int getNumberOfLT();
 	int getNumberOfGTE();
+	void removeDataset();
 	void setNumberOfLT(int numbeOfLT);
 	void setNumberOfGTE(int numberOfGTE);
+	int getLevel();
+	void setLevel(int level);
+	string getName();
+	void setName(string name);
+	float getClass();
+
 };
 
 #endif

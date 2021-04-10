@@ -8,11 +8,14 @@ class DatasetInfo;
 class DecisionTree {
 private:
 	Node* root;
+	int maxTreeDepth;
 public:
 	DecisionTree();
 	DecisionTree(Node* root);
 	Node* getRoot();
 	void setRoot(Node* root);
+	int getMaxTreeDepth();
+	void setMaxTreeDepth(int maxTreeDepth);
 	void splitRootNode();
 	float calculateBestInformationGainContinuousFeature(Node* node, int featureOrder);
 	float calculateBestInformationGainCategoricalFeature(Node* node, int featureOrder);
@@ -23,6 +26,8 @@ public:
 	void buildTree(Node* node, int depth);
 	bool isAllSameClass(Node* node);
 	void printTree(Node* node);
+	void moveLeafNodes(Node* node, int newLevel);
+	void getNodesWithLevel(Node* node, int level, list<Node*>& nodes);
 };
 
 #endif

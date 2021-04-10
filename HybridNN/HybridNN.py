@@ -19,8 +19,8 @@ def prepare_dataset(df, target=None):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('test2.csv', delimiter=',')
-    df, types = prepare_dataset(df, target='appealing')
+    df = pd.read_csv('iris.csv', delimiter=',')
+    df, types = prepare_dataset(df, target='Species')
     arr = df.to_numpy()
     print(types)
     initialization(arr, types)
