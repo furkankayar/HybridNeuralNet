@@ -1,10 +1,13 @@
 #include "Layer.h"
+#include "DecisionTree.h"
+#include "Node.h"
 #include "NNet.h"
 
-NNet::NNet(int layerNum) : NNet(vector<Layer*>(layerNum)) {}
+#include <iostream>
+using namespace std;
 
-NNet::NNet(vector<Layer*> layers) :
-	layers(layers) {
+NNet::NNet(int layerNum):
+	layers(vector<Layer*>(layerNum)){
 }
 
 vector<Layer*> NNet::getLayers() {
@@ -16,9 +19,7 @@ Layer* NNet::getInputLayer() {
 		return NULL;
 	}
 	Layer* firstLayer = this->layers[0];
-	if (firstLayer->getType() != LayerType::INPUT) {
-		throw exception("FIRST LAYER IS NOT INPUT LAYER!");
-	}
+
 	return firstLayer;
 }
 
@@ -27,16 +28,42 @@ Layer* NNet::getOutputLayer() {
 		return NULL;
 	}
 	Layer* lastLayer = this->layers[this->layers.size() - 1];
-	if (lastLayer->getType() != LayerType::OUTPUT) {
-		throw exception("LAST LAYER IS NOT OUTPUT LAYER!");
-	}
+
 	return lastLayer;
 }
 
-Layer* NNet::findOrCreateLayerWithIndex(LayerType type, int index) {
+Layer* NNet::findOrCreateLayerWithIndex(int index) {
 	Layer* layer = this->layers[index];
-	if (layer == NULL) {
-		layer = new Layer(type, index);
+	if (layer == nullptr) {
+		this->layers[index] = new Layer(index);
 	}
-	return layer;
+	return this->layers[index];
+}
+
+void NNet::mapTree(DecisionTree* dtree, int maxTreeDepth) {
+	//OUTPUT
+
+	list<Node*> outputNodes;
+	dtree->getNodesWithLevel(dtree->getRoot(), maxTreeDepth, outputNodes);
+	Layer* outputLayer = this->findOrCreateLayerWithIndex(maxTreeDepth - 1);
+	
+	for (Node* node : outputNodes) {
+		outputLayer->insertNeuronWithClass(node->getClass());
+	}
+	
+	
+	//INTERNAL
+	for (int i = 1; i < maxTreeDepth - 1; i++) {
+		Layer* hiddenLayer = this->findOrCreateLayerWithIndex(i);
+		list<Node*> internalNodes;
+		dtree->getNodesWithLevel(dtree->getRoot(), i, internalNodes);
+		for (Node* node : internalNodes) {
+			hiddenLayer->insertNeuronWithFeature(node->getSelectiveFeatureOrder());
+		}
+	}
+	
+	//INPUT
+	Layer* inputLayer = this->findOrCreateLayerWithIndex(0);
+	inputLayer->insertNeuronWithFeature(dtree->getRoot()->getSelectiveFeatureOrder()); // BURADA ASLINDA AYNI FEATURE ICIN OLUSTURULMUS NEURON VAR MI BAKILABILIR ANCAK DOGRU CALISTIGI TAKDIRDE BUNA GEREK YOK
+	
 }

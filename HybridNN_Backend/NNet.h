@@ -6,7 +6,6 @@
 using namespace std;
 
 class Layer;
-enum LayerType;
 
 class NNet {
 private:
@@ -14,11 +13,11 @@ private:
 
 public:
 	NNet(int layerNum);
-	NNet(vector<Layer*> layers);
 	vector<Layer*> getLayers();
 	Layer* getInputLayer();
 	Layer* getOutputLayer();
-	Layer* findOrCreateLayerWithIndex(LayerType type, int index);
+	Layer* findOrCreateLayerWithIndex(int index);
+	void mapTree(DecisionTree* dtree, int maxTreeDepth);
 };
 
 #endif

@@ -7,29 +7,20 @@ using namespace std;
 
 class Neuron;
 
-enum LayerType{
-	INPUT=0,
-	HIDDEN=1,
-	OUTPUT=2,
-	NOT_IN_USE=-1
-};
-
 class Layer {
 
 private:
-	LayerType type;
 	int layerIndex;
 	list<Neuron*> neurons; 
 
 public:
 	Layer();
-	Layer(LayerType type);
-	Layer(LayerType type, int layerIndex);
-	LayerType getType();
-	void setType(LayerType type);
+	Layer(int layerIndex);
 	int getLayerIndex();
 	void setLayerIndex(int layerIndex);
 	list<Neuron*> getNeurons();
+	void insertNeuronWithClass(float clazz);
+	void insertNeuronWithFeature(int feature);
 };
 
 #endif

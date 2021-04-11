@@ -1,21 +1,16 @@
 #include "Neuron.h"
 #include "Layer.h"
+#include <iostream>
 
-Layer::Layer() : Layer(LayerType::NOT_IN_USE) {}
+using namespace std;
 
-Layer::Layer(LayerType type) : Layer(type, -1) {}
+Layer::Layer() : Layer(-1) {}
 
-Layer::Layer(LayerType type, int layerIndex) :
-	type(type),
-	layerIndex(layerIndex) {}
-
-LayerType Layer::getType() {
-	return this->type;
+Layer::Layer(int layerIndex){
+	this->layerIndex = layerIndex;
+	this->neurons = list<Neuron*>();
 }
 
-void Layer::setType(LayerType type) {
-	this->type = type;
-}
 
 int Layer::getLayerIndex() {
 	return this->layerIndex;
@@ -27,4 +22,24 @@ void Layer::setLayerIndex(int layerIndex) {
 
 list<Neuron*> Layer::getNeurons() {
 	return this->neurons;
+}
+
+void Layer::insertNeuronWithClass(float clazz) {
+	for (Neuron* neuron : this->neurons) {
+		if (neuron->getClass() == clazz) {
+			return;
+		}
+	}
+	this->neurons.push_back(new Neuron(clazz));
+}
+
+void Layer::insertNeuronWithFeature(int feature) {
+
+	for (Neuron* nr : this->neurons) {
+		if (nr->getSelectedFeature() == feature) {
+			return;
+		}
+	}
+	
+	this->neurons.push_back(new Neuron(feature));
 }

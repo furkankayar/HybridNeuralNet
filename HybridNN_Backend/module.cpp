@@ -88,11 +88,18 @@ void initialization(py::array_t<float> dataset, py::array_t<float> types) {
 
     NNet* nnet = new NNet(maxTreeDepth);
     
-    trees[0]->printTree(trees[0]->getRoot());
+    for (int i = 0; i < typesVect.size() - 1; i++) {
+        nnet->mapTree(trees[i], maxTreeDepth);
+    }
+
+    for (int i = 0; i < maxTreeDepth; i++) {
+        cout << "Layer " << i  << " size: " << nnet->findOrCreateLayerWithIndex(i)->getNeurons().size() << endl;
+    }
 
     cout << "Successful finish" << endl;
 }
 
+/*
 void mapTreeToNNet(DecisionTree* dtree, NNet* nnet, int maxTreeDepth) {
    
     //OUTPUT
@@ -100,8 +107,9 @@ void mapTreeToNNet(DecisionTree* dtree, NNet* nnet, int maxTreeDepth) {
     dtree->getNodesWithLevel(dtree->getRoot(), maxTreeDepth, outputNodes);
     Layer* outputLayer = nnet->findOrCreateLayerWithIndex(LayerType::OUTPUT, maxTreeDepth);
     for (Node* node : outputNodes) {
-        // BURADA YAPILMASI GEREKEN ÞEY HER CLASS ICIN NODELARIN KOYULMASI
+        outputLayer->insertNeuronWithClass(node->getClass());
     }
+
 
     //INTERNAL
     for (int i = 1; i < maxTreeDepth - 1; i++) {
@@ -109,18 +117,16 @@ void mapTreeToNNet(DecisionTree* dtree, NNet* nnet, int maxTreeDepth) {
         list<Node*> internalNodes;
         dtree->getNodesWithLevel(dtree->getRoot(), i, internalNodes);
         for (Node* node : internalNodes) {
-            Neuron* newNeuron = new Neuron(node->getSelectiveFeatureOrder());
-            hiddenLayer->getNeurons().push_back(newNeuron);
+            hiddenLayer->insertNeuronWithFeature(node->getSelectiveFeatureOrder());
         }
     }
 
     //INPUT
-    Neuron* inputNeuron = new Neuron(dtree->getRoot()->getSelectiveFeatureOrder());
     Layer* inputLayer = nnet->findOrCreateLayerWithIndex(LayerType::INPUT, 0);
-    inputLayer->getNeurons().push_back(inputNeuron); // BURADA ASLINDA AYNI FEATURE ICIN OLUSTURULMUS NEURON VAR MI BAKILABILIR ANCAK DOGRU CALISTIGI TAKDIRDE BUNA GEREK YOK
+    inputLayer->insertNeuronWithClass(dtree->getRoot()->getSelectiveFeatureOrder()); // BURADA ASLINDA AYNI FEATURE ICIN OLUSTURULMUS NEURON VAR MI BAKILABILIR ANCAK DOGRU CALISTIGI TAKDIRDE BUNA GEREK YOK
 
 }
-
+*/
 
 
 
