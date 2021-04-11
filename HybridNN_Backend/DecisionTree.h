@@ -3,6 +3,7 @@
 #define DECISIONTREE_H
 
 class Node;
+class Edge;
 class DatasetInfo;
 
 class DecisionTree {
@@ -28,6 +29,7 @@ public:
 	void printTree(Node* node);
 	void moveLeafNodes(Node* node, int newLevel);
 	void getNodesWithLevel(Node* node, int level, list<Node*>& nodes);
+	Edge* findEdge(Node* node, Node* target);
 };
 
 #endif

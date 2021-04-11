@@ -44,16 +44,18 @@ void DecisionTree::splitRootNode() {
 
 void DecisionTree::printTree(Node* node) {
 	if (node->getEdges().size() == 0) {
+		cout << "\n------" << endl;
 		cout << "LEAF" << endl;
 		cout << "NAME " << node->getName() << endl;
-		cout << "FEATURE " << node->getSelectiveFeatureOrder() << endl;
-		cout << "THRESHOLD " << node->getThreshold() << endl;
+		//cout << "FEATURE " << node->getSelectiveFeatureOrder() << endl;
+		//cout << "THRESHOLD " << node->getThreshold() << endl;
 		cout << "LEVEL " << node->getLevel() << endl;
 		cout << "CLASS " << node->getClass() << endl;
 		node->getDataset()->print();
 		return;
 	}
 	
+	cout << "\n------" << endl;
 	cout << "INTERNAL" << endl;
 	cout << "NAME " << node->getName() << endl;
 	cout << "FEATURE " << node->getSelectiveFeatureOrder() << endl;
@@ -61,6 +63,9 @@ void DecisionTree::printTree(Node* node) {
 	cout << "LEVEL " << node->getLevel() << endl;
 	node->getDataset()->print();
 	for (Edge* edge : node->getEdges()) {
+		cout << "\n----" << endl;
+		cout << "FROM " << node->getName() << " TO " << edge->getTarget()->getName() << " WEIGHT: " << edge->getInfoGain() << endl;
+		cout << "----" << endl;
 		printTree(edge->getTarget());
 	}
 }
@@ -95,11 +100,17 @@ void DecisionTree::buildTree(Node* node, int depth) {
 	}
 
 	if (isAllSameClass(node)) {
+		calculateBestFeatureOrder(node);
 		return;
 	}
+
 	vector<Type> types = node->getDataset()->getTypes();
 	int bestFeatureOrder = calculateBestFeatureOrder(node); 
 	node->setSelectiveFeatureOrder(bestFeatureOrder);
+
+	if (bestFeatureOrder == -1 || depth == 3) {
+		return;
+	}
 
 	if (types[bestFeatureOrder] == CATEGORICAL){
 		node->getDataset()->setDatasetType(bestFeatureOrder, NOT_AVAILABLE);
@@ -134,7 +145,7 @@ bool DecisionTree::isAllSameClass(Node* node) {
 int DecisionTree::calculateBestFeatureOrder(Node* node) {
 	vector<vector <float>> data = node->getDataset()->getData();
 	vector<Type> types = node->getDataset()->getTypes();
-	float bestInfoGain = -1.0f;
+	float bestInfoGain = 0.0f;
 	int bestOrder = -1;
 
 	for (size_t i = 0; i < types.size() - 1; i++) {
@@ -161,7 +172,33 @@ int DecisionTree::calculateBestFeatureOrder(Node* node) {
 		calculateBestInformationGainContinuousFeature(node, bestOrder);
 
 	}
+
+	Edge* edge = findEdge(this->root, node);
+	if (edge != NULL) {
+		edge->setInfoGain(bestInfoGain);
+	}
+
 	return bestOrder;
+}
+
+Edge* DecisionTree::findEdge(Node* node, Node* target) {
+
+	if (node->getEdges().size() == 0) {
+		return NULL;
+	}
+
+	Edge* e = NULL;
+	for (Edge* edge : node->getEdges()) {
+		if (edge->getTarget() == target) {
+			return edge;
+		}
+		Edge* temp = findEdge(edge->getTarget(), target);
+		if (temp != NULL) {
+			e = temp;
+		}
+	}
+
+	return e;
 }
 
 void DecisionTree::splitContinuous(Node* node, int featureOrder) {

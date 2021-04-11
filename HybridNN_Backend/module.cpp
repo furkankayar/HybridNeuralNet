@@ -86,15 +86,17 @@ void initialization(py::array_t<float> dataset, py::array_t<float> types) {
         trees[i]->moveLeafNodes(trees[i]->getRoot(), maxTreeDepth);
     }
 
+    trees[0]->printTree(trees[0]->getRoot());
+
     NNet* nnet = new NNet(maxTreeDepth);
     
-    for (int i = 0; i < typesVect.size() - 1; i++) {
+    /*for (int i = 0; i < typesVect.size() - 1; i++) {
         nnet->mapTree(trees[i], maxTreeDepth);
     }
 
     for (int i = 0; i < maxTreeDepth; i++) {
         cout << "Layer " << i  << " size: " << nnet->findOrCreateLayerWithIndex(i)->getNeurons().size() << endl;
-    }
+    }*/
 
     cout << "Successful finish" << endl;
 }

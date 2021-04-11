@@ -91,6 +91,6 @@ float Node::getClass() {
 	for (unsigned long i = 0; i < this->getDataset()->getData().size(); i++) {
 		counters[this->getDataset()->getData()[i][targetFeature]]++;
 	}
-	return max_element(counters.begin(), counters.end())->first;
+	return max_element(counters.begin(), counters.end(), [](const pair<float, int>& a, const pair<float, int>& b)->bool {return a.second < b.second; })->first;
 }
 
