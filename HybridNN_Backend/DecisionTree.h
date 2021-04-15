@@ -30,6 +30,9 @@ public:
 	void moveLeafNodes(Node* node, int newLevel);
 	void getNodesWithLevel(Node* node, int level, list<Node*>& nodes);
 	Edge* findEdge(Node* node, Node* target);
+	void getMinAndMaxWeights(Node* node, float* min, float* max);
+	void initializeNonAssignedWeights();
+	void assignRandomWeights(Node* node, float min, float max);
 };
 
 #endif

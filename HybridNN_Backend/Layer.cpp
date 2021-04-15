@@ -33,13 +33,35 @@ void Layer::insertNeuronWithClass(float clazz) {
 	this->neurons.push_back(new Neuron(clazz));
 }
 
-void Layer::insertNeuronWithFeature(int feature) {
+Neuron* Layer::insertNeuronWithFeature(int feature) {
 
 	for (Neuron* nr : this->neurons) {
 		if (nr->getSelectedFeature() == feature) {
-			return;
+			return nr;
 		}
 	}
 	
-	this->neurons.push_back(new Neuron(feature));
+	Neuron* newNeuron = new Neuron(feature);
+	this->neurons.push_back(newNeuron);
+	return newNeuron;
+}
+
+Neuron* Layer::getNeuronWithClass(float clazz) {
+	for (Neuron* neuron : this->neurons) {
+		if (neuron->getClass() == clazz) {
+			return neuron;
+		}
+	}
+
+	return nullptr;
+}
+
+Neuron* Layer::getNeuronWithFeatureOrder(int feature) {
+	for (Neuron* neuron : this->neurons) {
+		if (neuron->getSelectedFeature() == feature) {
+			return neuron;
+		}
+	}
+
+	return nullptr;
 }

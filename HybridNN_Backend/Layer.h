@@ -20,7 +20,9 @@ public:
 	void setLayerIndex(int layerIndex);
 	list<Neuron*> getNeurons();
 	void insertNeuronWithClass(float clazz);
-	void insertNeuronWithFeature(int feature);
+	Neuron* insertNeuronWithFeature(int feature);
+	Neuron* getNeuronWithClass(float clazz);
+	Neuron* getNeuronWithFeatureOrder(int feature);
 };
 
 #endif

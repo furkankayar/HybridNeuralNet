@@ -99,7 +99,7 @@ void DecisionTree::buildTree(Node* node, int depth) {
 		this->maxTreeDepth = depth;
 	}
 
-	if (isAllSameClass(node)) {
+	if (isAllSameClass(node) || depth == 4) {
 		calculateBestFeatureOrder(node);
 		return;
 	}
@@ -108,7 +108,7 @@ void DecisionTree::buildTree(Node* node, int depth) {
 	int bestFeatureOrder = calculateBestFeatureOrder(node); 
 	node->setSelectiveFeatureOrder(bestFeatureOrder);
 
-	if (bestFeatureOrder == -1 || depth == 3) {
+	if (bestFeatureOrder == -1) {
 		return;
 	}
 
@@ -145,7 +145,7 @@ bool DecisionTree::isAllSameClass(Node* node) {
 int DecisionTree::calculateBestFeatureOrder(Node* node) {
 	vector<vector <float>> data = node->getDataset()->getData();
 	vector<Type> types = node->getDataset()->getTypes();
-	float bestInfoGain = 0.0f;
+	float bestInfoGain = -1.0f;
 	int bestOrder = -1;
 
 	for (size_t i = 0; i < types.size() - 1; i++) {
@@ -356,4 +356,43 @@ void DecisionTree::setMaxTreeDepth(int maxTreeDepth) {
 
 int DecisionTree::getMaxTreeDepth() {
 	return this->maxTreeDepth;
+}
+
+void DecisionTree::initializeNonAssignedWeights() {
+	float min = 1.0f;
+	float max = 0.0f;
+	srand(time(0));
+	getMinAndMaxWeights(this->root, &min, &max);
+	assignRandomWeights(this->root, min, max);
+
+}
+
+void DecisionTree::getMinAndMaxWeights(Node* node, float* min, float* max) {
+	if (node->getEdges().size() == 0) {
+		return;
+	}
+
+	for (Edge* edge : node->getEdges()) {
+		if (edge->getInfoGain() >= 0.0f && edge->getInfoGain() < *min) {
+			*min = edge->getInfoGain();
+		}
+		else if (edge->getInfoGain() >= 0.0f && edge->getInfoGain() > *max) {
+			*max = edge->getInfoGain();
+		}
+		getMinAndMaxWeights(edge->getTarget(), min, max);
+	}
+}
+
+void DecisionTree::assignRandomWeights(Node* node, float min, float max) {
+	if (node->getEdges().size() == 0) {
+		return;
+	}
+
+	for (Edge* edge : node->getEdges()) {
+		if (edge->getInfoGain() < min) {
+			float random = ((float)rand()) / (float)RAND_MAX;
+			edge->setInfoGain(min + random * (max - min));
+		}
+		assignRandomWeights(edge->getTarget(), min, max);
+	}
 }

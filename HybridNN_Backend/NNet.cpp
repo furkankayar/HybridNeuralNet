@@ -1,5 +1,8 @@
+#include "Synapse.h"
+#include "Neuron.h"
 #include "Layer.h"
 #include "DecisionTree.h"
+#include "Edge.h"
 #include "Node.h"
 #include "NNet.h"
 
@@ -45,25 +48,68 @@ void NNet::mapTree(DecisionTree* dtree, int maxTreeDepth) {
 
 	list<Node*> outputNodes;
 	dtree->getNodesWithLevel(dtree->getRoot(), maxTreeDepth, outputNodes);
-	Layer* outputLayer = this->findOrCreateLayerWithIndex(maxTreeDepth - 1);
+	Layer* outputLayer = this->findOrCreateLayerWithIndex(maxTreeDepth);
 	
 	for (Node* node : outputNodes) {
 		outputLayer->insertNeuronWithClass(node->getClass());
 	}
-	
-	
+		
 	//INTERNAL
-	for (int i = 1; i < maxTreeDepth - 1; i++) {
+	for (int i = maxTreeDepth - 1; i > 0; i--) {
 		Layer* hiddenLayer = this->findOrCreateLayerWithIndex(i);
+		
 		list<Node*> internalNodes;
 		dtree->getNodesWithLevel(dtree->getRoot(), i, internalNodes);
 		for (Node* node : internalNodes) {
-			hiddenLayer->insertNeuronWithFeature(node->getSelectiveFeatureOrder());
+			Neuron* neuron = hiddenLayer->insertNeuronWithFeature(node->getSelectiveFeatureOrder());
+			for (Edge* edge : node->getEdges()) {
+				Neuron* target = nullptr;
+				Layer* nextLayer = this->findOrCreateLayerWithIndex(edge->getTarget()->getLevel());
+				if (edge->getTarget()->getLevel() == maxTreeDepth) {
+					target = nextLayer->getNeuronWithClass(edge->getTarget()->getClass());
+				}
+				else {
+					target = nextLayer->getNeuronWithFeatureOrder(edge->getTarget()->getSelectiveFeatureOrder());
+				}
+				if (target == nullptr) {
+					cout << "SIKINTI VAR" << endl;
+					cout << edge->getTarget()->getSelectiveFeatureOrder() << endl;
+					cout << nextLayer->getNeurons().size() << endl;
+					cout << i << endl;
+
+				}
+				else {
+					neuron->addSynapse(edge->getInfoGain(), target);
+				}
+			}
 		}
 	}
 	
 	//INPUT
 	Layer* inputLayer = this->findOrCreateLayerWithIndex(0);
-	inputLayer->insertNeuronWithFeature(dtree->getRoot()->getSelectiveFeatureOrder()); // BURADA ASLINDA AYNI FEATURE ICIN OLUSTURULMUS NEURON VAR MI BAKILABILIR ANCAK DOGRU CALISTIGI TAKDIRDE BUNA GEREK YOK
-	
+	Neuron* neuron = inputLayer->insertNeuronWithFeature(dtree->getRoot()->getSelectiveFeatureOrder()); // BURADA ASLINDA AYNI FEATURE ICIN OLUSTURULMUS NEURON VAR MI BAKILABILIR ANCAK DOGRU CALISTIGI TAKDIRDE BUNA GEREK YOK
+	for (Edge* edge : dtree->getRoot()->getEdges()) {
+		Neuron* target = nullptr;
+		Layer* nextLayer = this->findOrCreateLayerWithIndex(edge->getTarget()->getLevel());
+		if (edge->getTarget()->getLevel() == maxTreeDepth) {
+			target = nextLayer->getNeuronWithClass(edge->getTarget()->getClass());
+		}
+		else {
+			target = nextLayer->getNeuronWithFeatureOrder(edge->getTarget()->getSelectiveFeatureOrder());
+		}
+		neuron->addSynapse(edge->getInfoGain(), target);
+	}
 }
+
+void NNet::print() {
+	for (Layer* layer : this->layers) {
+		cout << "Layer: " << layer->getLayerIndex() << endl;
+		for (Neuron* neuron : layer->getNeurons()) {
+			cout << "\tNeuron Feature: " << neuron->getSelectedFeature() << " Class: " << neuron->getClass() << endl;
+			for (Synapse* synapse : neuron->getSynapses()) {
+				cout << "\t\tSynapse Weight: " << synapse->getWeight() << " TO Class: " << synapse->getTarget()->getClass() << " Feature: " << synapse->getTarget()->getSelectedFeature() << endl;
+			}
+		}
+	}
+}
+

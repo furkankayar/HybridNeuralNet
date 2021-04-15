@@ -179,6 +179,7 @@
     <ClCompile Include="Neuron.cpp" />
     <ClCompile Include="NNet.cpp" />
     <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Synapse.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DatasetInfo.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="Layer.h" />
     <ClInclude Include="Neuron.h" />
     <ClInclude Include="Node.h" />
+    <ClInclude Include="Synapse.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

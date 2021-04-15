@@ -39,6 +39,9 @@
     <ClCompile Include="NNet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Synapse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DatasetInfo.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NNet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Synapse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

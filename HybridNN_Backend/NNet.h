@@ -18,6 +18,7 @@ public:
 	Layer* getOutputLayer();
 	Layer* findOrCreateLayerWithIndex(int index);
 	void mapTree(DecisionTree* dtree, int maxTreeDepth);
+	void print();
 };
 
 #endif

@@ -1,4 +1,6 @@
+#include "Synapse.h"
 #include "Neuron.h"
+#include <iostream>
 
 Neuron::Neuron() : Neuron(-1) {}
 
@@ -24,6 +26,22 @@ float Neuron::getClass() {
 
 void Neuron::setClass(float clazz) {
 	this->clazz = clazz;
+}
+
+list<Synapse*> Neuron::getSynapses() {
+	return this->synapses;
+}
+
+void Neuron::addSynapse(float weight, Neuron* target) {
+	for (Synapse* sn : this->synapses) {
+		if (sn->getTarget() == target) {
+			float curW = sn->getCount() * sn->getWeight();
+			sn->setWeight((curW + weight) / (sn->getCount() + 1));
+			sn->setCount(sn->getCount() + 1);
+			return;
+		}
+	}
+	this->synapses.push_back(new Synapse(weight, target));
 }
 
 
