@@ -12,6 +12,7 @@ private:
 	list<Synapse*> synapses;
 	int selectedFeature;
 	float clazz;
+	float value;
 
 public:
 	Neuron();
@@ -23,6 +24,10 @@ public:
 	void setClass(float clazz);
 	list<Synapse*> getSynapses();
 	void addSynapse(float weight, Neuron* target);
+	float getValue();
+	void setValue(float value);
+	void addValue(float value);
+	void sortSynapses();
 };
 
 #endif

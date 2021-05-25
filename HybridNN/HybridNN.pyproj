@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>4979360f-fe1f-44e2-b728-3d7a2eb2b75d</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>HybridNN.py</StartupFile>
+    <StartupFile>train.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="HybridNN.py" />
+    <Compile Include="train.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|venv" />
@@ -36,6 +39,7 @@
     <Content Include="test2.csv">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="train.csv" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HybridNN_Backend\HybridNN_Backend.vcxproj">

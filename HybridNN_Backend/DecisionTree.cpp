@@ -11,11 +11,12 @@
 
 using namespace std;
 
-DecisionTree::DecisionTree() : DecisionTree(NULL){}
+DecisionTree::DecisionTree() : DecisionTree(NULL, 0){}
 
-DecisionTree::DecisionTree(Node* root) {
+DecisionTree::DecisionTree(Node* root, int acceptableMaxDepth) {
 	this->root = root;
 	this->maxTreeDepth = 1;
+	this->acceptableMaxDepth = acceptableMaxDepth;
 }
 
 Node* DecisionTree::getRoot() {
@@ -35,8 +36,10 @@ void DecisionTree::splitRootNode() {
 		this->splitCategorical(this->root, featureOrder);
 	}
 	else if (types[featureOrder] == CONTINUOUS) {
+
 		//this->root->getDataset()->setDatasetType(featureOrder, NOT_AVAILABLE);
 		this->calculateBestInformationGainContinuousFeature(this->root, featureOrder);
+
 		this->splitContinuous(this->root, featureOrder);
 	}
 
@@ -51,7 +54,7 @@ void DecisionTree::printTree(Node* node) {
 		//cout << "THRESHOLD " << node->getThreshold() << endl;
 		cout << "LEVEL " << node->getLevel() << endl;
 		cout << "CLASS " << node->getClass() << endl;
-		node->getDataset()->print();
+		//node->getDataset()->print();
 		return;
 	}
 	
@@ -61,7 +64,7 @@ void DecisionTree::printTree(Node* node) {
 	cout << "FEATURE " << node->getSelectiveFeatureOrder() << endl;
 	cout << "THRESHOLD " << node->getThreshold() << endl;
 	cout << "LEVEL " << node->getLevel() << endl;
-	node->getDataset()->print();
+	//node->getDataset()->print();
 	for (Edge* edge : node->getEdges()) {
 		cout << "\n----" << endl;
 		cout << "FROM " << node->getName() << " TO " << edge->getTarget()->getName() << " WEIGHT: " << edge->getInfoGain() << endl;
@@ -94,12 +97,11 @@ void DecisionTree::moveLeafNodes(Node* node, int newLevel) {
 void DecisionTree::buildTree(Node* node, int depth) {
 
 	node->setLevel(depth);
-
 	if (depth > this->maxTreeDepth) {
 		this->maxTreeDepth = depth;
 	}
 
-	if (isAllSameClass(node) || depth == 4) {
+	if (isAllSameClass(node) || depth == this->acceptableMaxDepth) {
 		calculateBestFeatureOrder(node);
 		return;
 	}
@@ -391,7 +393,7 @@ void DecisionTree::assignRandomWeights(Node* node, float min, float max) {
 	for (Edge* edge : node->getEdges()) {
 		if (edge->getInfoGain() < min) {
 			float random = ((float)rand()) / (float)RAND_MAX;
-			edge->setInfoGain(min + random * (max - min));
+			edge->setInfoGain((min + random * (max - min)) - 0.5f);
 		}
 		assignRandomWeights(edge->getTarget(), min, max);
 	}

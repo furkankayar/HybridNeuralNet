@@ -13,10 +13,12 @@
 namespace py = pybind11;
 using namespace std;
 
-void initialization(py::array_t<float> dataset, py::array_t<float> types) {
+py::tuple nnet_initialization(py::array_t<float> dataset, py::array_t<float> types) {
     py::buffer_info datasetBufferInfo = dataset.request();
     py::buffer_info typesBufferInfo = types.request();
     
+   
+
     /* Read dataset */
     float* datasetPtr = (float*)datasetBufferInfo.ptr;
 
@@ -40,19 +42,21 @@ void initialization(py::array_t<float> dataset, py::array_t<float> types) {
         typesVect[i] = (typesPtr[i] == 0.0 ? Type::CATEGORICAL : Type::CONTINUOUS);
     }
 
- 
-
-    //vector<thread> threadList = vector<thread>(typesVect.size() - 1);
+    vector<thread> threadList = vector<thread>(typesVect.size() - 1);
 
     vector<DecisionTree*> trees = vector<DecisionTree*>(typesVect.size() - 1);
 
+    DatasetInfo* datasetInfo = nullptr;
+    cout << "Started to build Neural Network Structure" << endl;
     for (size_t i = 0; i < typesVect.size() - 1; i++) {
-        DatasetInfo* datasetInfo = new DatasetInfo(vect_arr, typesVect);
+        datasetInfo = new DatasetInfo(vect_arr, typesVect);
         Node* root = new Node(datasetInfo, i);
-        DecisionTree* dtree = new DecisionTree(root);
+        int acceptableMaxDepth = typesVect.size() > 5 ? 5 : typesVect.size() - 1;
+        DecisionTree* dtree = new DecisionTree(root, acceptableMaxDepth);
         dtree->splitRootNode();
-        
-        //threadList[i] = thread([dtree]() {
+        cout << "Building Tree " << i << endl;
+        trees[i] = dtree;
+        threadList[i] = thread([dtree]() {
             int count = 0;
             for (Edge* edge : dtree->getRoot()->getEdges()) {
                 Node* child = edge->getTarget();
@@ -60,18 +64,16 @@ void initialization(py::array_t<float> dataset, py::array_t<float> types) {
                 dtree->buildTree(child, 1);
                 count++;
             }
-            trees[i] = dtree;
-            cout << dtree->getMaxTreeDepth() << endl;
-        //    });
-        //dtree->printTree(dtree->getRoot());
+          
+            });
         cout << "=====================" << endl;
     }
 
 
-    /*for (int i = 0; i < typesVect.size() - 1; i++) {
+    for (int i = 0; i < typesVect.size() - 1; i++) {
         cout << "Waiting thread " << i << endl;
         threadList[i].join();
-    }*/
+    }
 
 
 
@@ -87,56 +89,36 @@ void initialization(py::array_t<float> dataset, py::array_t<float> types) {
         trees[i]->moveLeafNodes(trees[i]->getRoot(), maxTreeDepth);
     }
 
-    //trees[2]->printTree(trees[2]->getRoot());
-    //trees[3]->printTree(trees[3]->getRoot());
+    /*for (int i = 0; i < 4; i++) {
+        trees[i]->printTree(trees[i]->getRoot());
+        cout << "--------------------------- END -------------------------" << endl;
+    }*/
+
 
     NNet* nnet = new NNet(maxTreeDepth + 1);
     
     for (int i = 0; i < typesVect.size() - 1; i++) {
+        cout << "Mapping Tree " << i << endl;
         nnet->mapTree(trees[i], maxTreeDepth);
     }
 
+
+    
+
+    nnet->complete(datasetInfo->getTokens());
     nnet->print();
-    /*for (int i = 0; i < maxTreeDepth; i++) {
+    for (int i = 0; i < maxTreeDepth; i++) {
         cout << "Layer " << i  << " size: " << nnet->findOrCreateLayerWithIndex(i)->getNeurons().size() << endl;
-    }*/
+    }
 
     cout << "Successful finish" << endl;
+
+    return nnet->nnetToNumpy();
 }
-
-/*
-void mapTreeToNNet(DecisionTree* dtree, NNet* nnet, int maxTreeDepth) {
-   
-    //OUTPUT
-    list<Node*> outputNodes;
-    dtree->getNodesWithLevel(dtree->getRoot(), maxTreeDepth, outputNodes);
-    Layer* outputLayer = nnet->findOrCreateLayerWithIndex(LayerType::OUTPUT, maxTreeDepth);
-    for (Node* node : outputNodes) {
-        outputLayer->insertNeuronWithClass(node->getClass());
-    }
-
-
-    //INTERNAL
-    for (int i = 1; i < maxTreeDepth - 1; i++) {
-        Layer* hiddenLayer = nnet->findOrCreateLayerWithIndex(LayerType::HIDDEN, i);
-        list<Node*> internalNodes;
-        dtree->getNodesWithLevel(dtree->getRoot(), i, internalNodes);
-        for (Node* node : internalNodes) {
-            hiddenLayer->insertNeuronWithFeature(node->getSelectiveFeatureOrder());
-        }
-    }
-
-    //INPUT
-    Layer* inputLayer = nnet->findOrCreateLayerWithIndex(LayerType::INPUT, 0);
-    inputLayer->insertNeuronWithClass(dtree->getRoot()->getSelectiveFeatureOrder()); // BURADA ASLINDA AYNI FEATURE ICIN OLUSTURULMUS NEURON VAR MI BAKILABILIR ANCAK DOGRU CALISTIGI TAKDIRDE BUNA GEREK YOK
-
-}
-*/
-
 
 
 PYBIND11_MODULE(HybridNN_Backend, m) {
-    m.def("initialization", &initialization, R"pbdoc(
+    m.def("nnet_initialization", &nnet_initialization, R"pbdoc(
         Initialize structures.
     )pbdoc");
 

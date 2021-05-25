@@ -16,6 +16,23 @@ int Neuron::getSelectedFeature() {
 	return this->selectedFeature;
 }
 
+void Neuron::sortSynapses() {
+	this->synapses.sort([](Synapse* a, Synapse* b) {
+		if (a->getTarget()->getClass() == -1 && b->getTarget()->getClass() == -1) {
+			return a->getTarget()->getSelectedFeature() < b->getTarget()->getSelectedFeature();
+		}
+		else if (a->getTarget()->getClass() == -1) {
+			return true;
+		}
+		else if (b->getTarget()->getClass() == -1) {
+			return false;
+		}
+		else {
+			return a->getTarget()->getClass() < b->getTarget()->getClass();
+		}
+	});
+}
+
 void Neuron::setSelectedFeature(int selectedFeature) {
 	this->selectedFeature = selectedFeature;
 }
@@ -43,5 +60,20 @@ void Neuron::addSynapse(float weight, Neuron* target) {
 	}
 	this->synapses.push_back(new Synapse(weight, target));
 }
+
+float Neuron::getValue() {
+	return this->value;
+}
+
+void Neuron::setValue(float value) {
+	this->value = value;
+}
+
+void Neuron::addValue(float value) {
+	this->value += value; 
+}
+
+
+
 
 

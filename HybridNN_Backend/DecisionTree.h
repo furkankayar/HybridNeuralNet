@@ -10,9 +10,10 @@ class DecisionTree {
 private:
 	Node* root;
 	int maxTreeDepth;
+	int acceptableMaxDepth;
 public:
 	DecisionTree();
-	DecisionTree(Node* root);
+	DecisionTree(Node* root, int acceptableMaxDepth);
 	Node* getRoot();
 	void setRoot(Node* root);
 	int getMaxTreeDepth();

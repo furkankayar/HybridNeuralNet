@@ -11,18 +11,23 @@ class Layer {
 
 private:
 	int layerIndex;
-	list<Neuron*> neurons; 
+	list<Neuron*> neurons;
+	list<Neuron*> dummyNeurons;
 
 public:
 	Layer();
 	Layer(int layerIndex);
 	int getLayerIndex();
 	void setLayerIndex(int layerIndex);
+	void sortNeurons();
 	list<Neuron*> getNeurons();
-	void insertNeuronWithClass(float clazz);
+	list<Neuron*> getDummyNeurons();
+	Neuron* insertNeuronWithClass(float clazz);
 	Neuron* insertNeuronWithFeature(int feature);
 	Neuron* getNeuronWithClass(float clazz);
 	Neuron* getNeuronWithFeatureOrder(int feature);
+	Neuron* insertDummyNeuron(float forClass);
+	Neuron* getDummyNeuron(float forClass);
 };
 
 #endif

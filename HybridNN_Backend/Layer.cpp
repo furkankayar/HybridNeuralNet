@@ -1,6 +1,7 @@
 #include "Neuron.h"
 #include "Layer.h"
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -20,17 +21,46 @@ void Layer::setLayerIndex(int layerIndex) {
 	this->layerIndex = layerIndex;
 }
 
+void Layer::sortNeurons() {
+	this->neurons.sort([](Neuron* a, Neuron* b) {
+		if (a->getClass() == -1 && b->getClass() == -1) {
+			return a->getSelectedFeature() < b->getSelectedFeature();
+		}
+		else {
+			return a->getClass() < b->getClass();
+		}
+	});
+
+	this->dummyNeurons.sort([](Neuron* a, Neuron* b) {
+		return a->getClass() < b->getClass();
+	});
+
+	for (Neuron* neuron : this->neurons) {
+		neuron->sortSynapses();
+	}
+
+	for (Neuron* neuron : this->dummyNeurons) {
+		neuron->sortSynapses();
+	}
+}
+
 list<Neuron*> Layer::getNeurons() {
 	return this->neurons;
 }
 
-void Layer::insertNeuronWithClass(float clazz) {
+list<Neuron*> Layer::getDummyNeurons() {
+	return this->dummyNeurons;
+}
+
+Neuron* Layer::insertNeuronWithClass(float clazz) {
 	for (Neuron* neuron : this->neurons) {
 		if (neuron->getClass() == clazz) {
-			return;
+			return neuron;
 		}
 	}
-	this->neurons.push_back(new Neuron(clazz));
+	Neuron* neuron = new Neuron(clazz);
+	this->neurons.push_back(neuron);
+	return neuron; 
 }
 
 Neuron* Layer::insertNeuronWithFeature(int feature) {
@@ -65,3 +95,26 @@ Neuron* Layer::getNeuronWithFeatureOrder(int feature) {
 
 	return nullptr;
 }
+
+Neuron* Layer::insertDummyNeuron(float forClass) {
+	for (Neuron* neuron : this->dummyNeurons) {
+		if (neuron->getClass() == forClass) {
+			return neuron;
+		}
+	}
+
+	Neuron* neuron = new Neuron(forClass);
+	this->dummyNeurons.push_back(neuron);
+	return neuron;
+}
+
+Neuron* Layer::getDummyNeuron(float forClass) {
+	for (Neuron* neuron : this->dummyNeurons) {
+		if (neuron->getClass() == forClass) {
+			return neuron;
+		}
+	}
+
+	return nullptr;
+}
+
