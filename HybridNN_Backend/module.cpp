@@ -10,6 +10,8 @@
 #include "Neuron.h"
 #include "Layer.h"
 
+#define VERSION_INFO "1.0.0"
+
 namespace py = pybind11;
 using namespace std;
 

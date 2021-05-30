@@ -3,16 +3,17 @@ import tensorflow as tf
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import KFold, StratifiedKFold
 from keras.utils import np_utils
 from keras.callbacks import EarlyStopping
 from HybridNN import HybridNN
-from keras.optimizers import SGD
+import matplotlib.pyplot as plt
+
 
 def get_compiled_model():
   model = tf.keras.Sequential([
-    tf.keras.layers.Dense(4, activation='sigmoid'),
-    tf.keras.layers.Dense(4, activation='sigmoid'),
-    tf.keras.layers.Dense(3, activation='softmax')
+    tf.keras.layers.Dense(10, activation='relu'),
+    tf.keras.layers.Dense(2, activation='softmax')
   ])
 
   model.compile(optimizer='adam',
@@ -21,48 +22,161 @@ def get_compiled_model():
   return model
 
 
-def iris():
-    df = pd.read_csv('iris.csv', delimiter=',')
+def haberman():
+    df = pd.read_csv('haberman.csv', delimiter=',')
     print("-----------")
-    opt = SGD(lr=0.01)
     hybridNN = HybridNN(hidden_activation='sigmoid')
-    hybridNN.init_model(df, target='Species')
+    hybridNN.init_model(df, target='survival_status')
     
-    labels = hybridNN.df['Species']
-    features = hybridNN.df.iloc[:, 0:4]
+    labels = hybridNN.df['survival_status']
+    features = hybridNN.df.iloc[:, 0:3]
 
-    X = features 
-
+    X = features.to_numpy()
+    
     encoder = LabelEncoder()
     y = np.ravel(labels)
-    #encoder.fit(y)
-    #y = encoder.transform(y)
-    #y = np_utils.to_categorical(y)
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    print(len(X_train))
-  
-    train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train))
-    hybridNN.train(train_dataset = train_dataset, epochs = 1000000)
-
-    """
-    overfitCallback = EarlyStopping(monitor='val_loss', patience=100)
-    model = hybridNN.get_model()
-    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=1000000000, callbacks=[overfitCallback])
-
-
-
+    y_not_encoded = y
+    encoder.fit(y)
+    y = encoder.transform(y)
+    y = np_utils.to_categorical(y)
     
-    model = tf.keras.Sequential([
-        tf.keras.layers.Dense(4, activation='sigmoid'),
-        tf.keras.layers.Dense(4, activation='sigmoid'),
-        tf.keras.layers.Dense(3, activation='softmax')
-    ])
+    kfold = KFold(n_splits=5, shuffle=True)
+    fold_no = 1
+    acc_per_fold = []
+    loss_per_fold = []
+    best_history = None
+    best_model = None
+    con_mat = None
+    for train, test in kfold.split(X, y):
+        print(f'Training for fold {fold_no}')
+        """
+        hybridNN.reset_model()
+        history = hybridNN.fit(X[train], y[train], 
+                         validation_data=(X[test], y[test]),
+                         batch_size = 30,
+                         epochs=1000, 
+                         #callbacks=[overfitCallback],
+                         zero_weight_update=False)
+        model = hybridNN.get_model()
+        """
+        model = get_compiled_model()
+        overfitCallback = EarlyStopping(monitor='val_loss', patience=10)
+        history = model.fit(X[train], y[train], 
+                         validation_data=(X[test], y[test]),
+                         batch_size = 30,
+                         epochs=250,
+                         callbacks=[])
+        
+        scores = model.evaluate(X[test], y[test], verbose=0)
+        print(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
+        acc_per_fold.append(scores[1] * 100)
+        loss_per_fold.append(scores[0])
+        if scores[1] * 100 >= max(acc_per_fold):
+            best_history = history
+            best_model = model
+            y_pred = np.argmax(model.predict(X[test]), axis=-1)
+            con_mat = tf.math.confusion_matrix(labels = y_not_encoded[test], predictions = y_pred).numpy()
+        fold_no = fold_no + 1
+        
+        
+    print(acc_per_fold)
+    print(loss_per_fold)
+    print(con_mat)
 
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    #con_mat = tf.math.confusion_matrix(labels = y_test_not_encoded, predictions = y_pred).numpy()
+    #print(con_mat)
 
-    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=1000000000, callbacks=[overfitCallback])
-    """
+    plt.plot(best_history.history['accuracy'])
+    plt.plot(best_history.history['val_accuracy'])
+    plt.title('Best Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
+
+    plt.plot(best_history.history['loss'])
+    plt.plot(best_history.history['val_loss'])
+    plt.title('Best Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
+
+def iris():
+    df = pd.read_csv('haberman.csv', delimiter=',')
+    print("-----------")
+    hybridNN = HybridNN(hidden_activation='sigmoid')
+    hybridNN.init_model(df, target='target')
+    
+    labels = hybridNN.df['target']
+    features = hybridNN.df.iloc[:, 0:3]
+
+    X = features.to_numpy()
+    
+    encoder = LabelEncoder()
+    y = np.ravel(labels)
+    encoder.fit(y)
+    y = encoder.transform(y)
+    y = np_utils.to_categorical(y)
+    
+    kfold = KFold(n_splits=5, shuffle=True)
+    fold_no = 1
+    acc_per_fold = []
+    loss_per_fold = []
+    best_model = None
+    for train, test in kfold.split(X, y):
+        print(f'Training for fold {fold_no}')
+        """
+        hybridNN.reset_model()
+        history = hybridNN.fit(X[train], y[train], 
+                         validation_data=(X[test], y[test]),
+                         batch_size = 13,
+                         epochs=250, 
+                         #callbacks=[overfitCallback],
+                         zero_weight_update=False)
+        """
+        model = get_compiled_model()
+        overfitCallback = EarlyStopping(monitor='val_loss', patience=10)
+        history = model.fit(X[train], y[train], 
+                         validation_data=(X[test], y[test]),
+                         batch_size = 30,
+                         epochs=150,
+                         callbacks=[])
+        scores = model.evaluate(X[test], y[test], verbose=0)
+        print(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
+        acc_per_fold.append(scores[1] * 100)
+        loss_per_fold.append(scores[0])
+        if scores[1] * 100 >= max(acc_per_fold):
+            best_model = history
+        fold_no = fold_no + 1
+    
+        
+    print(acc_per_fold)
+    print(loss_per_fold)
+
+    plt.plot(best_model.history['accuracy'])
+    plt.plot(best_model.history['val_accuracy'])
+    plt.title('Best Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
+
+    plt.plot(best_model.history['loss'])
+    plt.plot(best_model.history['val_loss'])
+    plt.title('Best Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
+
+
+    #y_pred = np.argmax(hybridNN.get_model().predict(X_test), axis=-1)
+    #con_mat = tf.math.confusion_matrix(labels = y_test_not_encoded, predictions = y_pred).numpy()
+    #print(con_mat)
+    
+ 
+
 
 def heart():
     df = pd.read_csv('heart.csv', delimiter=',')
@@ -122,4 +236,13 @@ def airplane():
 if __name__ == "__main__":
     #heart()
     #airplane()
-    iris()
+    #iris()
+    haberman()
+    """
+    import seaborn as sns
+    sns.set(style="white", color_codes=True)
+
+    iris = pd.read_csv("haberman.csv")
+    sns.pairplot(iris, hue="survival_status", size=3)    
+    plt.show()
+    """

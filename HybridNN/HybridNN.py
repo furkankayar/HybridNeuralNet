@@ -5,14 +5,43 @@ from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from HybridNN_Backend import nnet_initialization
-from keras.optimizers import SGD
 
 TYPE_CATEGORICAL = 0
 TYPE_CONTINUOUS = 1
 
+class ProtectWeightCallback(tf.keras.callbacks.Callback):
+    def __init__(self, initial_weights=[]):
+        self.initial_weights = initial_weights
+        return super().__init__()
+
+
+    def __protect_weights(self):
+        weights = self.initial_weights
+        for i in range(0, len(weights)):
+            new_weights = []
+            actual_weights = self.model.layers[i].get_weights()[0]
+            for j in range(0, len(actual_weights)):
+                new_weights.append([])
+                for k in range(0, len(actual_weights[j])):
+                    if weights[i][j][k] == 0.0:
+                        new_weights[j].append(0.0)
+                    else:
+                        new_weights[j].append(actual_weights[j][k])
+            nnet_layer_weights = [np.array(new_weights), self.model.layers[i].get_weights()[1]]
+            self.model.layers[i].set_weights(nnet_layer_weights) 
+
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.__protect_weights()
+
 
 class HybridNN:
-    def __init__(self, loss='categorical_crossentropy', optimizer=tf.keras.optimizers.Adam(), metrics=['accuracy'], hidden_activation='relu', output_activation='softmax'):
+    def __init__(self, 
+                 loss='categorical_crossentropy', 
+                 optimizer=tf.keras.optimizers.Adam(), 
+                 metrics=['accuracy'], 
+                 hidden_activation='relu', 
+                 output_activation='softmax'):
         self.model = Sequential()
         self.loss = loss
         self.optimizer = optimizer
@@ -22,12 +51,14 @@ class HybridNN:
         self.nnet_structure = None
         self.df = None
 
+
     def init_model(self, df, target=None):
         df, types = self.__prepare_dataset(df, target)
         self.df = df
         arr = df.to_numpy()
         self.nnet_structure = nnet_initialization(arr, types)
         self.__init_structures()
+
 
     def __prepare_dataset(self, df, target=None):
         types = []
@@ -38,71 +69,48 @@ class HybridNN:
                 types.append(TYPE_CATEGORICAL)
             else:
                 types.append(TYPE_CONTINUOUS)
-
         return df, np.array(types)
+
+
+    def reset_model(self):
+        self.model = Sequential()
+        self.__init_structures()
+
 
     def __init_weights(self):
         weights = self.nnet_structure[0]
         for i in range(0, len(weights)):
            nnet_layer_weights = [np.array(weights[i]), self.model.layers[i].get_weights()[1]]
            self.model.layers[i].set_weights(nnet_layer_weights)
-           #print(self.model.layers[i].get_weights())
+
 
     def __init_structures(self):
         weights = self.nnet_structure[0]
         shape = self.nnet_structure[1]
         self.model.add(Dense(shape[1], input_dim=shape[0], activation=self.hidden_activation))
         for i in range(2, len(weights)):
-            self.model.add(Dense(shape[i], activation=self.output_activation))
+            self.model.add(Dense(shape[i], activation=self.hidden_activation))
         self.model.add(Dense(shape[len(shape) - 1], activation=self.output_activation))
         self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
         self.__init_weights()
 
-    def __loss(self, x, y, loss_object):
-        y_ = self.model(x, training=True)
-        return loss_object(y_true=y, y_pred=y_)
 
-    def __grad(self, inputs, targets, loss_object):
-        with tf.GradientTape() as tape:
-            loss_value = self.__loss(inputs, targets, loss_object)
-        return loss_value, tape.gradient(loss_value, self.model.trainable_variables)
+    def __print_weights(self):
+        print(self.model.weights)
 
-    def train(self, epochs=100, train_dataset=None, batch_size=10):
-        train_dataset = train_dataset.batch(batch_size)
-        loss_object = keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
-        for epoch in range(epochs):
-            epoch_loss_avg = tf.keras.metrics.Mean()
-            epoch_accuracy = tf.keras.metrics.SparseCategoricalAccuracy()
-
-            for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
-
-                loss_value, grads = self.__grad(x_batch_train, y_batch_train, loss_object)
-
-                self.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
-                epoch_loss_avg.update_state(loss_value)
-                epoch_accuracy.update_state(y_batch_train, self.model(x_batch_train, training=True))
-               
-            if epoch % 10 == 0:
-                print("Epoch {:03d}: Loss: {:.3f}, Accuracy: {:.3%}".format(epoch,
-                                                                epoch_loss_avg.result(),
-                                                                epoch_accuracy.result()))
-    
-            #self.__init_weights()
+    def fit(self, *args, **kwargs):
+        if kwargs.get('callbacks'):
+            if kwargs.get('zero_weight_update') == False:
+                kwargs['callbacks'].append(ProtectWeightCallback(self.nnet_structure[0]))
+        else:
+            if kwargs.get('zero_weight_update') == False:
+                kwargs['callbacks'] = [ProtectWeightCallback(self.nnet_structure[0])]
+        
+        if kwargs.get('zero_weight_update') != None:
+            kwargs.pop('zero_weight_update')
+        return self.model.fit(*args, **kwargs)
 
 
     def get_model(self):
         return self.model
-
-
-if __name__ == '__main__':
-    df = pd.read_csv('train.csv', delimiter=',')
-    df.drop('index', inplace=True, axis=1)
-    df.drop('id', inplace=True, axis=1)
-    print("-----------")
-    hybridNN = HybridNN()
-    hybridNN.init_model(df, target='satisfaction')
-
-
-
-    hybridNN.get_model().fit(X, Y, validation_split=0.33, epochs=150, batch_size=10)
