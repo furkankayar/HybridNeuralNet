@@ -50,13 +50,14 @@ py::tuple nnet_initialization(py::array_t<float> dataset, py::array_t<float> typ
 
     DatasetInfo* datasetInfo = nullptr;
     cout << "Started to build Neural Network Structure" << endl;
+    cout << "Building trees" << endl;
     for (size_t i = 0; i < typesVect.size() - 1; i++) {
         datasetInfo = new DatasetInfo(vect_arr, typesVect);
         Node* root = new Node(datasetInfo, i);
         int acceptableMaxDepth = typesVect.size() > 5 ? 5 : typesVect.size() - 1;
         DecisionTree* dtree = new DecisionTree(root, acceptableMaxDepth);
         dtree->splitRootNode();
-        cout << "Building Tree " << i << endl;
+        //cout << "Building Tree " << i << endl;
         trees[i] = dtree;
         threadList[i] = thread([dtree]() {
             int count = 0;
@@ -68,12 +69,12 @@ py::tuple nnet_initialization(py::array_t<float> dataset, py::array_t<float> typ
             }
           
             });
-        cout << "=====================" << endl;
+        //cout << "=====================" << endl;
     }
 
 
     for (int i = 0; i < typesVect.size() - 1; i++) {
-        cout << "Waiting thread " << i << endl;
+        //cout << "Waiting thread " << i << endl;
         threadList[i].join();
     }
 
@@ -100,20 +101,18 @@ py::tuple nnet_initialization(py::array_t<float> dataset, py::array_t<float> typ
     NNet* nnet = new NNet(maxTreeDepth + 1);
     
     for (int i = 0; i < typesVect.size() - 1; i++) {
-        cout << "Mapping Tree " << i << endl;
+        //cout << "Mapping Tree " << i << endl;
         nnet->mapTree(trees[i], maxTreeDepth);
     }
 
 
     
-
     nnet->complete(datasetInfo->getTokens());
     nnet->print();
-    for (int i = 0; i < maxTreeDepth; i++) {
-        cout << "Layer " << i  << " size: " << nnet->findOrCreateLayerWithIndex(i)->getNeurons().size() << endl;
+    for (int i = 0; i < maxTreeDepth + 1; i++) {
+        cout << "Layer " << i  << " size: " << nnet->findOrCreateLayerWithIndex(i)->getNeurons().size() + nnet->findOrCreateLayerWithIndex(i)->getDummyNeurons().size() << endl;
     }
 
-    cout << "Successful finish" << endl;
 
     return nnet->nnetToNumpy();
 }
